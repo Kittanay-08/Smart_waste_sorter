@@ -1,0 +1,11 @@
+path: .            # โฟลเดอร์ dataset (relative กับไฟล์นี้)
+train: train/images
+val: val/images
+
+names:
+  0: plastic_bottle
+  1: plastic_cup
+  2: aluminium_can
+  3: cardboard
+  4: paper
+  5: general_waste

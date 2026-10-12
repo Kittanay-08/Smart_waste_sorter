@@ -1,0 +1,40 @@
+/* Dark Modern Glassmorphism Theme */
+body {
+  min-height: 100vh;
+  color: #e8ecf5;
+  background: radial-gradient(circle at 15% 10%, #1b2a4e 0%, transparent 45%),
+              radial-gradient(circle at 85% 90%, #0f3d3a 0%, transparent 45%), #0a0e1a;
+  background-attachment: fixed;
+  font-family: "Segoe UI", "Sarabun", sans-serif;
+}
+.glass {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 18px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+}
+.brand { background: linear-gradient(90deg, #4ade80, #38bdf8); -webkit-background-clip: text; background-clip: text; color: transparent; font-weight: 700; }
+.nav-pills .nav-link { color: #b8c2dc; border-radius: 12px; }
+.nav-pills .nav-link.active { background: linear-gradient(90deg, #22c55e, #0ea5e9); color: #fff; }
+.viewer { aspect-ratio: 16/10; background: #05070d; border-radius: 14px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.viewer img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.placeholder-text { color: #6b7799; }
+.form-control, .form-control:focus { background: rgba(255,255,255,.08); color: #fff; border-color: rgba(255,255,255,.2); }
+.form-control::placeholder { color: #8a95b5; }
+.dropzone { border: 2px dashed rgba(255,255,255,.3); border-radius: 16px; padding: 40px 16px; text-align: center; cursor: pointer; transition: .2s; }
+.dropzone.drag { border-color: #4ade80; background: rgba(74,222,128,.08); }
+.bin-card { height: 100%; padding: 14px 16px; border-radius: 16px; font-size: .88rem; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); border-top: 6px solid var(--c); box-shadow: 0 6px 24px rgba(0,0,0,.3); }
+.bin-card .bin-title { font-weight: 700; font-size: 1.05rem; color: var(--c); margin-bottom: 6px; }
+.bin-card .bin-title small { color: #b8c2dc; font-weight: 400; }
+.bin-card div + div { margin-top: 4px; }
+.bin-strip { display: flex; gap: 12px; flex-wrap: wrap; }
+.bin-chip { flex: 1; min-width: 200px; border-radius: 12px; padding: 10px 14px; font-weight: 600; color: #111; }
+.bin-yellow { background: #FFD700; }
+.bin-green { background: linear-gradient(90deg, #3CC850, #38a3f8); }
+.table { --bs-table-bg: transparent; --bs-table-color: #e8ecf5; --bs-table-border-color: rgba(255,255,255,.1); }
+.dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 6px; }
+.stat-card { text-align: center; padding: 12px; }
+.stat-card .num { font-size: 1.8rem; font-weight: 700; }
+.history-wrap { max-height: 360px; overflow-y: auto; }
