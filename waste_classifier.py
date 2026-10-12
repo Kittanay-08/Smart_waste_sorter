@@ -93,9 +93,11 @@ class WasteClassifier:
             self.using_coco = False
             print(f"[AI] โหลด Custom Model: {CUSTOM_MODEL}")
         else:
-            self.model = YOLO("yolov8n.pt")  # ดาวน์โหลดอัตโนมัติ
+            local_yolo = Path(__file__).parent / "yolov8n.pt"
+            model_path = str(local_yolo) if local_yolo.exists() else "yolov8n.pt"
+            self.model = YOLO(model_path)
             self.using_coco = True
-            print("[AI] ไม่พบ best.pt -> ใช้ yolov8n.pt (COCO fallback)")
+            print(f"[AI] โหลด Model: {model_path} (COCO fallback)")
         self.names = self.model.names
         self._last_logged: dict[str, float] = {}  # key -> เวลาที่บันทึกล่าสุด
         self._lock = threading.Lock()

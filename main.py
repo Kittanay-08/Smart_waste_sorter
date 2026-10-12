@@ -221,9 +221,22 @@ def summary():
     return database.get_summary()
 
 
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
+
 @app.get("/bins")
 def bins():
     """ข้อมูลถังขยะ 4 สี (ประเภทขยะและวิธีจัดการ) สำหรับแสดงบนหน้าเว็บ"""
     from waste_classifier import BINS
     return {k: {f: v[f] for f in ("name", "color_hex", "types", "handling")} | {"key": k}
             for k, v in BINS.items()}
+
+
+if __name__ == "__main__":
+    import os
+    import uvicorn
+    port = int(os.environ.get("PORT", 10000))
+    print(f"[Server] กำลังเริ่มทำงานบนพอร์ต: {port}")
+    uvicorn.run("main:app", host="0.0.0.0", port=port, workers=1)
