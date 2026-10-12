@@ -2,9 +2,9 @@ services:
   - type: web
     name: smart-waste-sorter
     runtime: python
-    plan: starter            # free (512MB) อาจ RAM ไม่พอสำหรับ torch; แนะนำ starter
-    buildCommand: pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu && pip install -r requirements.txt
-    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    plan: free
+    buildCommand: pip install --no-cache-dir torch torchvision --index-url https://download.pytorch.org/whl/cpu && pip install --no-cache-dir -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT --workers 1
     healthCheckPath: /
     envVars:
       - key: PYTHON_VERSION
