@@ -34,7 +34,26 @@
 
 ---
 
-## 🛠️ วิธีการรันในเครื่อง (Local Run)
+## 🐳 วิธีการรันผ่าน Docker (Docker Run)
+1. **เปิดด้วย 1-Click บน Windows:**
+   - เริ่มทำงาน: ดับเบิลคลิก `DOCKER_START.bat`
+   - หยุดทำงาน: ดับเบิลคลิก `DOCKER_STOP.bat`
+2. **รันผ่าน Command Line (Docker Compose):**
+   ```bash
+   # เริ่มระบบและ Build Image
+   docker compose up -d --build
+
+   # ดู Log การทำงาน
+   docker logs -f smart_waste_sorter
+
+   # หยุดการทำงาน
+   docker compose down
+   ```
+   เปิดใช้งานได้ที่: `http://localhost:8000`
+
+---
+
+## 🛠️ วิธีการรันในเครื่อง (Local Run - ไม่ใช้ Docker)
 1. **เปิดด้วย 1-Click:**
    - ดับเบิลคลิกไฟล์ `START.bat`
 2. **เปิดผ่าน Terminal (Python 3.10+):**

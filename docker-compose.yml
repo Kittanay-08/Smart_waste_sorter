@@ -1,0 +1,14 @@
+services:
+  smart-waste-sorter:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: smart_waste_sorter
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./waste_log.db:/app/waste_log.db

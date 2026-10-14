@@ -21,7 +21,7 @@ from pathlib import Path
 
 import cv2
 import numpy as np
-from fastapi import FastAPI, File, HTTPException, Request, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -57,6 +57,9 @@ class CameraManager:
             if not cap.isOpened():
                 cap.release()
                 raise RuntimeError(f"ไม่สามารถเปิดกล้อง: {src}")
+            cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+            cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
+            cap.set(cv2.CAP_PROP_FPS, 60)
             cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
             self.cap, self.source = cap, parsed
             self.generation += 1
@@ -126,6 +129,13 @@ def stop_camera():
     return {"status": "stopped"}
 
 
+@app.get("/camera/latest")
+def get_latest_detections():
+    if classifier is None:
+        return {"detections": []}
+    return {"detections": classifier.get_latest()}
+
+
 def mjpeg_generator():
     """
     วนอ่านเฟรม -> YOLO -> วาดกรอบ -> log (ผ่าน cooldown) -> encode JPEG -> yield
@@ -146,7 +156,7 @@ def mjpeg_generator():
         annotated, dets = classifier.detect(frame)
         if dets:
             classifier.log_with_cooldown(dets, source="stream")
-        ok, buf = cv2.imencode(".jpg", annotated, [cv2.IMWRITE_JPEG_QUALITY, 80])
+        ok, buf = cv2.imencode(".jpg", annotated, [cv2.IMWRITE_JPEG_QUALITY, 85])
         if not ok:
             continue
         yield b"--frame\r\nContent-Type: image/jpeg\r\n\r\n" + buf.tobytes() + b"\r\n"
@@ -162,7 +172,7 @@ def video_feed():
 
 # ---------------- Mode 2: Image upload ----------------
 @app.post("/predict-image")
-async def predict_image(file: UploadFile = File(...)):
+async def predict_image(file: UploadFile = File(...), api_key: str = Form(None)):
     if file.content_type not in ("image/jpeg", "image/png", "image/jpg"):
         raise HTTPException(status_code=400, detail="รองรับเฉพาะไฟล์ .jpg / .png")
     data = await file.read()
@@ -173,10 +183,10 @@ async def predict_image(file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail="ไฟล์ภาพไม่ถูกต้อง")
     frame = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
 
-    annotated, dets = classifier.detect(frame)
+    annotated, dets = classifier.detect(frame, is_upload=True, user_api_key=api_key)
     # ภาพนิ่งแต่ละครั้งเป็นการอัปโหลดแยกกัน -> บันทึกทุกรายการ ไม่ใช้ cooldown
     for d in dets:
-        database.insert_log(d["class_name"], d["category"], d["confidence"], d["bin_name"], "upload")
+        database.insert_log(d.get("item_name", d["class_name"]), d["category"], d["confidence"], d["bin_name"], "upload")
 
     ok, buf = cv2.imencode(".jpg", annotated, [cv2.IMWRITE_JPEG_QUALITY, 90])
     b64 = base64.b64encode(buf.tobytes()).decode()
@@ -184,7 +194,7 @@ async def predict_image(file: UploadFile = File(...)):
         "count": len(dets),
         "detections": dets,
         "annotated_image": f"data:image/jpeg;base64,{b64}",
-        "model": "custom best.pt" if not classifier.using_coco else "yolov8n.pt (fallback)",
+        "model": "universal-ensemble" if classifier.using_coco else "custom best.pt",
     }
 
 
@@ -216,6 +226,15 @@ def history(limit: int = 50):
     return {"items": database.get_history(max(1, min(limit, 500)))}
 
 
+@app.post("/history/clear")
+def clear_history():
+    """ลบประวัติการตรวจจับทั้งหมดและรีเซ็ต cooldown"""
+    database.clear_history()
+    if classifier:
+        classifier.clear_cooldown()
+    return {"status": "cleared"}
+
+
 @app.get("/summary")
 def summary():
     return database.get_summary()
@@ -234,9 +253,23 @@ def bins():
             for k, v in BINS.items()}
 
 
+# ---------------- AI Q&A Assistant ----------------
+class ChatRequest(BaseModel):
+    message: str
+    current_item: str | None = None
+    api_key: str | None = None
+
+
+@app.post("/ai/chat")
+def ai_chat(req: ChatRequest):
+    """ระบบ AI ถาม-ตอบ ข้อมูลการคัดแยกขยะอัจฉริยะและความรู้ทั่วไป"""
+    import ai_assistant
+    return ai_assistant.answer_waste_query(req.message, req.current_item, req.api_key)
+
+
 if __name__ == "__main__":
     import os
     import uvicorn
-    port = int(os.environ.get("PORT", 10000))
+    port = int(os.environ.get("PORT", 8000))
     print(f"[Server] กำลังเริ่มทำงานบนพอร์ต: {port}")
     uvicorn.run("main:app", host="0.0.0.0", port=port, workers=1)

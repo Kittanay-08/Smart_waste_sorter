@@ -67,3 +67,11 @@ def get_summary() -> dict:
             "SELECT category, COUNT(*) AS n FROM detection_log GROUP BY category"
         ).fetchall()
     return {r["category"]: r["n"] for r in rows}
+
+
+def clear_history() -> None:
+    """ลบประวัติการตรวจจับทั้งหมดและรีเซ็ตลำดับ ID"""
+    with _lock, _connect() as conn:
+        conn.execute("DELETE FROM detection_log")
+        conn.execute("DELETE FROM sqlite_sequence WHERE name='detection_log'")
+
